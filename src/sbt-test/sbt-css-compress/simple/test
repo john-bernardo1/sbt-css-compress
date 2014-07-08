@@ -1,1 +1,7 @@
-$ webStage
+> show webStage
+$ exists target/web/stage/css/main.css
+$ exists target/web/stage/css/main.min.css
+$ exists target/web/stage/js/main.js
+$ exists target/web/public/main/css-compress/css/main.min.css
+
+> verifyMinified
