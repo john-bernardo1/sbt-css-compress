@@ -32,7 +32,7 @@ Option              | Description
 --------------------|------------
 suffix              | Extension to append to each compressed file. Defaults to `".min.css"`
 parentDir           | Parent directory name where compressed CSS will go. Defaults to `"css-compress"`
-lineBreak           | Number of characters on a line before attempting to insert a line break. Defaults to `-1` (never)
+lineBreak           | Number of characters on a line before attempting to insert a line break. This is merely a hint to the compressor. Defaults to `-1` (never)
 
 An example of providing an option is below:
 
