@@ -74,7 +74,7 @@ object SbtCssCompress extends AutoPlugin {
 
   private def compress: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
     mappings: Seq[PathMapping] =>
-      val targetDir = (public in Assets).value / parentDir.value
+      val targetDir = webTarget.value / parentDir.value
       val compressMappings = mappings.view.filter(m => (includeFilter in cssCompress).value.accept(m._1)).toMap
 
       val runCompressor = FileFunction.cached(streams.value.cacheDirectory / parentDir.value, FilesInfo.lastModified) {

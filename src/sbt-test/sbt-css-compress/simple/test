@@ -1,7 +1,23 @@
-> show webStage
-$ exists target/web/stage/css/main.css
-$ exists target/web/stage/css/main.min.css
+> clean
+> webStage
+$ exists target/web/css-compress/css/main.min.css
+$ exists target/web/css-compress/css/large.min.css
 $ exists target/web/stage/js/main.js
-$ exists target/web/public/main/css-compress/css/main.min.css
+$ exists target/web/stage/css/main.min.css
+$ exists target/web/stage/css/large.min.css
+$ exists target/web/stage/css/main.css
+$ exists target/web/stage/css/large.css
 
 > verifyMinified
+> clean
+
+> set pipelineStages in Assets := Seq(cssCompress)
+> assets
+$ exists target/web/css-compress/css/main.min.css
+$ exists target/web/css-compress/css/large.min.css
+$ exists target/web/public/main/js/main.js
+$ exists target/web/public/main/css/main.min.css
+$ exists target/web/public/main/css/large.min.css
+$ exists target/web/public/main/css/main.css
+$ exists target/web/public/main/css/large.css
+> verifyAssetsMinified
