@@ -43,7 +43,7 @@ object SbtCssCompress extends AutoPlugin {
 
   override def projectSettings = Seq(
     suffix := ".min.css",
-    parentDir := "css-compress",
+    parentDir := "",
     lineBreak := -1,
     includeFilter in cssCompress := new UnminifiedCssFileFilter(suffix.value),
     cssCompress := compress.value
@@ -74,14 +74,14 @@ object SbtCssCompress extends AutoPlugin {
 
   private def compress: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
     mappings: Seq[PathMapping] =>
-      val targetDir = webTarget.value / parentDir.value
+      val targetDir = webTarget.value / cssCompress.key.label
       val compressMappings = mappings.view.filter(m => (includeFilter in cssCompress).value.accept(m._1)).toMap
 
       val runCompressor = FileFunction.cached(streams.value.cacheDirectory / parentDir.value, FilesInfo.lastModified) {
         files =>
           files.map { f =>
             val outputFileSubPath = s"${util.withoutExt(compressMappings(f))}${suffix.value}"
-            val outputFile = targetDir / outputFileSubPath
+            val outputFile = targetDir / parentDir.value / outputFileSubPath
             IO.createDirectory(outputFile.getParentFile)
             streams.value.log.info(s"Compressing file ${compressMappings(f)}")
             invokeCompressor(f, outputFile, lineBreak.value)
@@ -89,9 +89,7 @@ object SbtCssCompress extends AutoPlugin {
           }
       }
 
-      val compressed = runCompressor(compressMappings.keySet).map { outputFile =>
-        (outputFile, util.withParent(outputFile))
-      }.toSeq
+      val compressed = runCompressor(compressMappings.keySet).pair(relativeTo(targetDir))
 
       compressed ++ mappings.filter {
         // Handle duplicate mappings

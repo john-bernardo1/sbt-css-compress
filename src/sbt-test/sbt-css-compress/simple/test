@@ -1,7 +1,7 @@
 > clean
 > webStage
-$ exists target/web/css-compress/css/main.min.css
-$ exists target/web/css-compress/css/large.min.css
+$ exists target/web/cssCompress/css/main.min.css
+$ exists target/web/cssCompress/css/large.min.css
 $ exists target/web/stage/js/main.js
 $ exists target/web/stage/css/main.min.css
 $ exists target/web/stage/css/large.min.css
@@ -13,8 +13,8 @@ $ exists target/web/stage/css/large.css
 
 > set pipelineStages in Assets := Seq(cssCompress)
 > assets
-$ exists target/web/css-compress/css/main.min.css
-$ exists target/web/css-compress/css/large.min.css
+$ exists target/web/cssCompress/css/main.min.css
+$ exists target/web/cssCompress/css/large.min.css
 $ exists target/web/public/main/js/main.js
 $ exists target/web/public/main/css/main.min.css
 $ exists target/web/public/main/css/large.min.css
