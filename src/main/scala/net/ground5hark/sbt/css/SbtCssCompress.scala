@@ -14,7 +14,7 @@ object Import {
 
   object CssCompress {
     val suffix = SettingKey[String]("css-compress-suffix", "Suffix to append to compressed files, default: \".min.css\"")
-    val parentDir = SettingKey[String]("css-compress-parent-dir", "Parent directory name where compressed CSS will go, default: \"css-compress\"")
+    val parentDir = SettingKey[String]("css-compress-parent-dir", "Parent directory name where compressed CSS will go, default: \"\"")
     val lineBreak = SettingKey[Int]("css-compress-line-break", "Position in the compressed output at which to break out a new line, default: -1 (never)")
   }
 }
@@ -43,7 +43,7 @@ object SbtCssCompress extends AutoPlugin {
 
   override def projectSettings = Seq(
     suffix := ".min.css",
-    parentDir := "css-compress",
+    parentDir := "",
     lineBreak := -1,
     includeFilter in cssCompress := new UnminifiedCssFileFilter(suffix.value),
     cssCompress := compress.value
@@ -89,10 +89,7 @@ object SbtCssCompress extends AutoPlugin {
           }
       }
 
-      val compressed = runCompressor(compressMappings.keySet).map { outputFile =>
-        (outputFile, util.withParent(outputFile))
-      }.toSeq
-
+      val compressed = runCompressor(compressMappings.keySet).pair(relativeTo(targetDir))
       compressed ++ mappings.filter {
         // Handle duplicate mappings
         case (mappingFile, mappingName) =>

@@ -6,11 +6,13 @@ organization := "net.ground5hark.sbt"
 
 name := "sbt-css-compress-test"
 
-version := "0.1.1"
+version := "0.1.2"
 
 scalaVersion := "2.10.4"
 
 lazy val root = (project in file(".")).enablePlugins(SbtWeb)
+
+CssCompress.parentDir := "css-compress"
 
 pipelineStages := Seq(cssCompress)
 
