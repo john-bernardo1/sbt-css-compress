@@ -21,7 +21,7 @@ object Import {
 
 class UnminifiedCssFileFilter(suffix: String) extends FileFilter {
   override def accept(file: File): Boolean =
-    !HiddenFileFilter.accept(file) && !file.getName.endsWith(suffix) && file.getName.endsWith(".css")
+    !HiddenFileFilter.accept(file) && file.isFile && !file.getName.endsWith(suffix) && file.getName.endsWith(".css")
 }
 
 object util {
@@ -46,6 +46,7 @@ object SbtCssCompress extends AutoPlugin {
     parentDir := "",
     lineBreak := -1,
     includeFilter in cssCompress := new UnminifiedCssFileFilter(suffix.value),
+    excludeFilter in cssCompress := HiddenFileFilter,
     cssCompress := compress.value
   )
 
@@ -75,7 +76,10 @@ object SbtCssCompress extends AutoPlugin {
   private def compress: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
     mappings: Seq[PathMapping] =>
       val targetDir = webTarget.value / parentDir.value
-      val compressMappings = mappings.view.filter(m => (includeFilter in cssCompress).value.accept(m._1)).toMap
+      val compressMappings = mappings.view
+        .filter(m => (includeFilter in cssCompress).value.accept(m._1))
+        .filterNot(m => (excludeFilter in cssCompress).value.accept(m._1))
+        .toMap
 
       val runCompressor = FileFunction.cached(streams.value.cacheDirectory / parentDir.value, FilesInfo.lastModified) {
         files =>

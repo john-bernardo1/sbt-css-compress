@@ -8,7 +8,7 @@ Plugin
 ======
 Add the plugin to your `project/plugins.sbt`:
 ```scala
-addSbtPlugin("net.ground5hark.sbt" % "sbt-css-compress" % "0.1.1")
+addSbtPlugin("net.ground5hark.sbt" % "sbt-css-compress" % "0.1.3")
 ```
 
 Add the [Sonatype releases] resolver:
@@ -41,7 +41,8 @@ CssCompress.suffix := ".min.css"
 ```
 
 This will produce assets with the specified `CssCompress.suffix` suffix value under the `CssCompress.parentDir`
-directory within the `target` folder. This will be `target/web/public/main` or `target/web/stage`.
+directory within the `target` folder. This will be `target/web/public/main` or `target/web/stage`. You can also specify
+`includeFilter in closure` or `excludeFilter in closure` to select files on a custom criteria.
 
 License
 =======
