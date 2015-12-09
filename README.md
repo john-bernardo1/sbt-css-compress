@@ -42,7 +42,7 @@ CssCompress.suffix := ".min.css"
 
 This will produce assets with the specified `CssCompress.suffix` suffix value under the `CssCompress.parentDir`
 directory within the `target` folder. This will be `target/web/public/main` or `target/web/stage`. You can also specify
-`includeFilter in closure` or `excludeFilter in closure` to select files on a custom criteria.
+`includeFilter in cssCompress` or `excludeFilter in cssCompress` to select files on a custom criteria.
 
 License
 =======
