@@ -1,22 +1,21 @@
 package net.ground5hark.sbt.css
 
-import java.io.{IOException, InputStreamReader, FileInputStream, OutputStreamWriter, FileOutputStream, Closeable}
+import java.io.{File => _, FileFilter => _, _}
 
 import com.typesafe.sbt.web.pipeline.Pipeline
 import com.typesafe.sbt.web.{PathMapping, SbtWeb}
 import com.yahoo.platform.yui.compressor.CssCompressor
 import sbt.Keys._
 import sbt._
-import collection.mutable
 
-object Import {
+import scala.collection.mutable
+
+trait CssCompressKeys {
   val cssCompress = TaskKey[Pipeline.Stage]("css-compress", "Runs the CSS compressor on the assets in the pipeline")
 
-  object CssCompress {
-    val suffix = SettingKey[String]("css-compress-suffix", "Suffix to append to compressed files, default: \".min.css\"")
-    val parentDir = SettingKey[String]("css-compress-parent-dir", "Parent directory name where compressed CSS will go, default: \"\"")
-    val lineBreak = SettingKey[Int]("css-compress-line-break", "Position in the compressed output at which to break out a new line, default: -1 (never)")
-  }
+  val cssCompressSuffix = SettingKey[String]("css-compress-suffix", "Suffix to append to compressed files, default: \".min.css\"")
+  val cssCompressParentDir = SettingKey[String]("css-compress-parent-dir", "Parent directory name where compressed CSS will go, default: \"\"")
+  val cssCompressLineBreak = SettingKey[Int]("css-compress-line-break", "Position in the compressed output at which to break out a new line, default: -1 (never)")
 }
 
 class UnminifiedCssFileFilter(suffix: String) extends FileFilter {
@@ -26,6 +25,7 @@ class UnminifiedCssFileFilter(suffix: String) extends FileFilter {
 
 object util {
   def withoutExt(name: String): String = name.substring(0, name.lastIndexOf("."))
+
   def withParent(f: File): String = f.getParentFile.getName + "/" + f.getName
 }
 
@@ -34,18 +34,17 @@ object SbtCssCompress extends AutoPlugin {
 
   override def trigger = AllRequirements
 
-  val autoImport = Import
+  object autoImport extends CssCompressKeys
 
   import SbtWeb.autoImport._
   import WebKeys._
   import autoImport._
-  import CssCompress._
 
   override def projectSettings = Seq(
-    suffix := ".min.css",
-    parentDir := "",
-    lineBreak := -1,
-    includeFilter in cssCompress := new UnminifiedCssFileFilter(suffix.value),
+    cssCompressSuffix := ".min.css",
+    cssCompressParentDir := "",
+    cssCompressLineBreak := -1,
+    includeFilter in cssCompress := new UnminifiedCssFileFilter(cssCompressSuffix.value),
     excludeFilter in cssCompress := HiddenFileFilter,
     cssCompress := compress.value
   )
@@ -73,33 +72,35 @@ object SbtCssCompress extends AutoPlugin {
     }
   }
 
-  private def compress: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
+  private val compress: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
+    val streamsValue = streams.value
+
     mappings: Seq[PathMapping] =>
-      val targetDir = webTarget.value / parentDir.value
+      val targetDir = webTarget.value / cssCompressParentDir.value
       val compressMappings = mappings.view
         .filter(m => (includeFilter in cssCompress).value.accept(m._1))
         .filterNot(m => (excludeFilter in cssCompress).value.accept(m._1))
         .toMap
 
-      val runCompressor = FileFunction.cached(streams.value.cacheDirectory / parentDir.value, FilesInfo.lastModified) {
+      val runCompressor = FileFunction.cached(streamsValue.cacheDirectory / cssCompressParentDir.value, FilesInfo.lastModified) {
         files =>
           files.map { f =>
-            val outputFileSubPath = s"${util.withoutExt(compressMappings(f))}${suffix.value}"
+            val outputFileSubPath = s"${util.withoutExt(compressMappings(f))}${cssCompressSuffix.value}"
             val outputFile = targetDir / outputFileSubPath
             IO.createDirectory(outputFile.getParentFile)
-            streams.value.log.info(s"Compressing file ${compressMappings(f)}")
-            invokeCompressor(f, outputFile, lineBreak.value)
+            streamsValue.log.info(s"Compressing file ${compressMappings(f)}")
+            invokeCompressor(f, outputFile, cssCompressLineBreak.value)
             outputFile
           }
       }
 
-      val compressed = runCompressor(compressMappings.keySet).pair(relativeTo(targetDir))
+      val compressed = runCompressor(compressMappings.keySet).pair(Path.relativeTo(targetDir))
       compressed ++ mappings.filter {
         // Handle duplicate mappings
         case (mappingFile, mappingName) =>
-          val include = compressed.filter(_._2 == mappingName).isEmpty
+          val include = !compressed.exists(_._2 == mappingName)
           if (!include)
-            streams.value.log.warn(s"css-compressor encountered a duplicate mapping for $mappingName and will " +
+            streamsValue.log.warn(s"css-compressor encountered a duplicate mapping for $mappingName and will " +
               "prefer the css-compressor version instead. If you want to avoid this, make sure you aren't " +
               "including minified and non-minified sibling assets in the pipeline.")
           include
