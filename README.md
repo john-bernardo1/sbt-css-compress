@@ -8,7 +8,7 @@ Plugin
 ======
 Add the plugin to your `project/plugins.sbt`:
 ```scala
-addSbtPlugin("net.ground5hark.sbt" % "sbt-css-compress" % "0.1.4")
+addSbtPlugin("net.ground5hark.sbt" % "sbt-css-compress" % "0.2.0-SNAPSHOT")
 ```
 
 Add the [Sonatype releases] resolver:
@@ -28,19 +28,19 @@ pipelineStages := Seq(cssCompress)
 
 Configuration options
 =====================
-Option              | Description
---------------------|------------
-suffix              | Extension to append to each compressed file. Defaults to `".min.css"`
-parentDir           | Parent directory name where compressed CSS will go. Defaults to `""`, which outputs the file into the base target directory
-lineBreak           | Number of characters on a line before attempting to insert a line break. This is merely a hint to the compressor. Defaults to `-1` (never)
+Option                | Description
+----------------------|------------
+cssCompressSuffix     | Extension to append to each compressed file. Defaults to `".min.css"`
+cssCompressParentDir  | Parent directory name where compressed CSS will go. Defaults to `""`, which outputs the file into the base target directory
+cssCompressLineBreak  | Number of characters on a line before attempting to insert a line break. This is merely a hint to the compressor. Defaults to `-1` (never)
 
 An example of providing an option is below:
 
 ```scala
-CssCompress.suffix := ".min.css"
+cssCompressSuffix := ".min.css"
 ```
 
-This will produce assets with the specified `CssCompress.suffix` suffix value under the `CssCompress.parentDir`
+This will produce assets with the specified `cssCompressSuffix` suffix value under the `cssCompressParentDir`
 directory within the `target` folder. This will be `target/web/public/main` or `target/web/stage`. You can also specify
 `includeFilter in cssCompress` or `excludeFilter in cssCompress` to select files on a custom criteria.
 

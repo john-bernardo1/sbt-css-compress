@@ -8,11 +8,11 @@ name := "sbt-css-compress-test"
 
 version := "0.1.4"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.10.6"
 
 lazy val root = (project in file(".")).enablePlugins(SbtWeb)
 
-CssCompress.parentDir := "css-compress"
+cssCompressParentDir := "css-compress"
 
 pipelineStages := Seq(cssCompress)
 
